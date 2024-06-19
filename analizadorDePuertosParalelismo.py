@@ -53,42 +53,45 @@ def scan_udp_port(ip, port):
         return "closed"
 
 
-def printListOfPorts(dicPorts, protocol, ip):
+def printListOfPorts(dicPorts, protocol, ip, executionTime):
 
-    for port in dicPorts:
-        print(f"Port {port}/{protocol} on {ip} is {dicPorts[port]}")
+    print(f"The execution time is: {executionTime}")
+
+    #for port in dicPorts:
+    #    print(f"Port {port}/{protocol} on {ip} is {dicPorts[port]}")
 
 
-def fileWithTheAccesiblePorts(ip, protocol, portMin, portMax, openPorts, executionTime):
+def fileWithTheAccesiblePorts(ip, protocol, portMin, portMax, dicPorts, executionTime):
     f = open (f"{ip}_{protocol}_{portMin}_{portMax}.txt",'w')
     
-    f.write(f"All the ports open between {portMin}-{portMax}")
-    f.write(f"Execution time: {executionTime}")
-    for port in openPorts:
-        f.write(f"Port {port}/{protocol} on {ip} is {openPorts[port]}")
+    f.write(f"All the ports open between {portMin}-{portMax}\n\n")
+    f.write(f"Execution time: {executionTime}\n")
+    for port in dicPorts:
+        f.write(f"Port {port}/{protocol} on {ip} is {dicPorts[port]}\n")
     
     f.close()
 
 
 def main():
 
-    executionStartTime = time.time
+    executionStartTime = time.time()
 
     max_attempts = 5
     num_attempts = 1
 
-    num_process = 4
+    num_process = 0
     dicPorts={}
     
     tupletype = ()
 
     while(num_attempts <= max_attempts):
 
-        if len(sys.argv) == 5:
+        if len(sys.argv) == 6:
             ip=sys.argv[1] 
             portMin=int(sys.argv[2])
             portMax=int(sys.argv[3])
             protocol = sys.argv[4]
+            num_process = int(sys.argv[5])
 
             protocol = protocol.upper()
 
@@ -107,33 +110,33 @@ def main():
                     ranges[-1] = (ip, portMin + (num_process - 1) * step, portMax, protocol)
 
                     with multiprocessing.Pool(processes=num_process) as pool:
-                        listOfPorts = pool.map( scan_ports, ranges)
+                        dicOfPorts = pool.map( scan_ports, ranges)
 
                     # Conseguimos tener un único diccionario
-                    open_ports = {}
-                    for result in listOfPorts:
-                       open_ports.extend(result)
+                    openPorts = {}
+                    for result in dicOfPorts:
+                       openPorts.update(result)
 
-                    finalExecutionTime = time.time
+                    finalExecutionTime = time.time()
 
-                    executionTime = executionStartTime - finalExecutionTime
+                    executionTime = finalExecutionTime - executionStartTime
                     
-                    printListOfPorts(dicPorts, protocol, ip, executionTime)
+                    printListOfPorts(openPorts, protocol, ip, executionTime)
 
                     #Añadir a un fichero .txt
-                    fileWithTheAccesiblePorts(ip,protocol, portMin, portMax, open_ports)
+                    fileWithTheAccesiblePorts(ip,protocol, portMin, portMax, openPorts, executionTime)
 
                     sys.exit()
 
                 else:
                     num_attempts += 1
                     print("Put correct arguments\n")
-                    print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> \n\n")
+                    print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> <numProcess>\n\n")
             
         else:
             num_attempts += 1
             print("Put correct arguments\n")
-            print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> \n\n")
+            print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> <numProcess>\n\n")
 
     
 # Verificación si este archivo se ejecuta como el programa principal
