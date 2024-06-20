@@ -69,15 +69,16 @@ def scan_udp_port(ip, port):
         return "closed"
 
 
+
 def printListOfPorts(dicPorts, protocol, ip, executionTime):
-    #print("Lista de puertos abiertos\n")
-    print(f"\nTiempo de ejecucion: {executionTime}\n\n")
+    print(f"\nTiempo de ejecucion: {executionTime}\n")
+    print("The ports open and filtered are in the .txt file on the same folder of this program was executed\n\n")
     #for port in dicPorts:
     #    print(f"Port {port}/{protocol} on {ip} is {dicPorts[port]}-NoParalelism\n")
 
 
 def fileWithTheAccesiblePorts(ip, protocol, portMin, portMax, dicPorts, executionTime):
-    f = open (f"{ip}_{protocol}_{portMin}_{portMax}.txt",'w')
+    f = open (f"{ip}_{protocol}_{portMin}_{portMax}NoParalelism.txt",'w')
     
     f.write(f"All the ports open between {portMin}-{portMax}\n\n")
     f.write(f"Execution time: {executionTime}\n")
@@ -91,41 +92,38 @@ def main():
 
     executionStartTime = time.time()
 
-    max_attempts = 5
-    num_attempts = 1
-
     dicPorts={}
-  
-    while(num_attempts <= max_attempts):
 
-        if len(sys.argv) == 5:
-            ip=sys.argv[1] 
-            portMin=int(sys.argv[2])
-            portMax=int(sys.argv[3])
-            protocol = sys.argv[4]
+    if len(sys.argv) == 5:
+        ip=sys.argv[1] 
+        portMin=int(sys.argv[2])
+        portMax=int(sys.argv[3])
+        protocol = sys.argv[4]
 
-            protocol = protocol.upper()
+        protocol = protocol.upper()
 
-            if PORT_MIN < portMin < portMax < PORT_MAX:
-                if protocol in {"TCP", "UDP"}:
-                    scan_ports(ip, portMin, portMax, protocol, dicPorts)
+        if PORT_MIN < portMin < portMax < PORT_MAX:
+            if protocol in {"TCP", "UDP"}:
+                scan_ports(ip, portMin, portMax, protocol, dicPorts)
 
-                    finalExecutionTime = time.time()
-                    executionTime = finalExecutionTime - executionStartTime
+                finalExecutionTime = time.time()
+                executionTime = finalExecutionTime - executionStartTime
 
-                    printListOfPorts(dicPorts, protocol, ip, executionTime)
-                    fileWithTheAccesiblePorts(ip, protocol, portMin, portMax, dicPorts, executionTime)
+                printListOfPorts(dicPorts, protocol, ip, executionTime)
+                fileWithTheAccesiblePorts(ip, protocol, portMin, portMax, dicPorts, executionTime)
 
-                    sys.exit()
-                else:
-                    num_attempts += 1
-                    print("Put correct arguments\n")
-                    print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> \n\n")
-            
+                sys.exit()
+            else:
+                print("Put correct arguments, only TCP or UDP must be on the fifth argument\n")
+                print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> <numProcess >=2 >\n\n")
+
         else:
-            num_attempts += 1
-            print("Put correct arguments\n")
-            print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> \n\n")
+            print("Put correct arguments, the portMin number mast be less than maxPort\n")
+            print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> <numProcess >=2 >\n\n")
+            
+    else:
+        print("Put correct arguments, the arguments have to be 5\n")
+        print("./nameOfProgramm <ipToAnalize> <PortMin> <PortMax> <Protocolo TCP/UDP> <numProcess>\n\n")
 
     
 

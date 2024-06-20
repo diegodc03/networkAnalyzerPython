@@ -1,4 +1,3 @@
-
 import socket
 import sys
 import multiprocessing
@@ -22,11 +21,10 @@ def scan_ports(queue, sharedDict, ip, portMin, portMax, protocol):
             #dicPorts[port] = status
             sharedDict[port] = status
 
-        if(port % 2 == 0):
-            queue.put(1)
+        
+        queue.put(1)
 
         
-
 def scan_tcp_port(ip, port):
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,8 +63,8 @@ def printListOfPorts(dicPorts, protocol, ip, executionTime):
     #    print(f"Port {port}/{protocol} on {ip} is {dicPorts[port]}")
 
 
-def fileWithTheAccesiblePorts(ip, protocol, portMin, portMax, dicPorts, executionTime):
-    f = open (f"{ip}_{protocol}_{portMin}_{portMax}.txt",'w')
+def fileWithTheAccesiblePorts(ip, protocol, portMin, portMax, dicPorts, executionTime, numProcess):
+    f = open (f"{ip}_{protocol}_NumProcess_{numProcess}_Ports_{portMin}_{portMax}Paralel.txt",'w')
     
     f.write(f"All the ports open between {portMin}-{portMax}\n\n")
     f.write(f"Execution time: {executionTime}\n")
@@ -87,16 +85,15 @@ def porcentajeUsed(q,portMax, portMin):
 
 
     # Read results from the queue
-    i=0
     while True:
         var = q.get()  
-        total = total + 2
+        total = total + 1
 
         portAnalyzing = total - portMin + 1
         portcent = portAnalyzing/totalPorts
        
         num_hashes = int(50 * portcent)
-
+    
         # Rellena la lista de progreso con '#'
         progressList = ['#'] * num_hashes + ['-'] * (50 - num_hashes)
 
@@ -104,7 +101,7 @@ def porcentajeUsed(q,portMax, portMin):
 
         print(f"[{stringProgress}]{num_hashes*2}%", end='\r')
 
-        if num_hashes == 50:
+        if num_hashes >= 50:
             break
 
 
@@ -112,15 +109,7 @@ def main():
 
     executionStartTime = time.time()
 
-    max_attempts = 5
-    num_attempts = 1
-
-    num_process = 0
-    dicPorts={}
-    
-    tupletype = ()
-
-    
+    num_process = 0    
 
     if len(sys.argv) == 6:
         ip=sys.argv[1] 
@@ -163,7 +152,6 @@ def main():
                     p.start()
                     processes.append(p)
 
-                    
                 # Esperamos a que todos los procesos terminen
                 for proc in processes:
                     proc.join()
@@ -176,7 +164,7 @@ def main():
                 executionTime = finalExecutionTime - executionStartTime
                     
                 printListOfPorts(sharedDict_Ord, protocol, ip, executionTime)
-                fileWithTheAccesiblePorts(ip,protocol, portMin, portMax, sharedDict_Ord, executionTime)
+                fileWithTheAccesiblePorts(ip,protocol, portMin, portMax, sharedDict_Ord, executionTime, num_process)
 
                 sys.exit()
 
@@ -197,10 +185,3 @@ if __name__ == "__main__":
     main()
 
     
-
-
-
-
-
-
-
